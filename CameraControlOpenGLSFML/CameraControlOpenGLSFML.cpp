@@ -40,7 +40,7 @@ public:
 	float forwardSpeed;
 	float roationSpeed;
 	
-	Camera():forwardSpeed(2.5f),roationSpeed(0.1f){}
+	Camera():forwardSpeed(20.5f),roationSpeed(0.1f){}
 
 	void Init(aiVector3D& p=zero, aiVector3D& f=zaxis, aiVector3D& u=yaxis){
 		position=p;
@@ -80,103 +80,24 @@ public:
 		gluLookAt(position.x,position.y,position.z,centre.x,centre.y,centre.z,up.x,up.y,up.z);
 	}
 
+	void ProjectionTransform(bool perspective){
+		if(perspective){
+			gluPerspective(90.f, 1.f, 1.f, 10000.0f);//fov, aspect, zNear, zFar
+		}
+		else{
+			glOrtho(-1000,1000,-1000,1000,1,100000);
+		}
+	}
+
 };
 
 aiVector3D Camera::zero(0.0f);
 aiVector3D Camera::yaxis(0.0f,1.0f,0.0f);
 aiVector3D Camera::zaxis(0.0f,0.0f,1.0f);
 
-////////////////////////////////////////////////////////////
-/// Entry point of application
-////////////////////////////////////////////////////////////
-int main()
-{
-    // Create the main window
-    sf::RenderWindow App(sf::VideoMode(800, 600, 32), "SFML OpenGL");
-
-    // Create a clock for measuring time elapsed
-    sf::Clock Clock;
-
-	Camera camera;
-	camera.Init();
-	
-    //prepare OpenGL surface for HSR
-	glClearDepth(1.f);
-    glClearColor(0.3f, 0.3f, 0.3f, 0.f);
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
-
-    //// Setup a perspective projection & Camera position
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(90.f, 1.f, 1.f, 3000.0f);//fov, aspect, zNear, zFar
 
 
-
-    bool rotate=true;
-	float angle=0;
-	
-	// Start game loop
-	while (App.isOpen())
-    {
-        // Process events
-        sf::Event Event;
-        while (App.pollEvent(Event))
-        {
-            // Close window : exit
-            if (Event.type == sf::Event::Closed)
-                App.close();
-
-            // Escape key : exit
-            if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::Escape))
-                App.close();
-
-			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::R)){
-				rotate=!rotate;
-			}
-
-			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::D)){
-				camera.MoveLeftRight(1);
-			}
-			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::A)){
-				camera.MoveLeftRight(-1);
-			}
-
-			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::W)){
-				camera.MoveForwardBack(1);
-			}
-			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::S)){
-				camera.MoveForwardBack(-1);
-			}
-
-			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::Right)){
-				camera.TurnRightLeft(1);
-			}
-			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::Left)){
-				camera.TurnRightLeft(-1);
-			}
-			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::Up)){
-				camera.TurnUpDown(1);
-			}
-			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::Down)){
-				camera.TurnUpDown(-1);
-			}
- 
- 
-		}
-        
-        //Prepare for drawing
-		// Clear color and depth buffer
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // Apply some transformations for the cube
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-        camera.ViewingTransform();
-		
-		if(rotate){
-			angle=Clock.getElapsedTime().asSeconds();
-		}
+void DrawCube(float angle){
 		glRotatef(angle * 50, 1.f, 0.f, 0.f);
 		glRotatef(angle * 30, 0.f, 1.f, 0.f);
 		glRotatef(angle * 90, 0.f, 0.f, 1.f);
@@ -223,6 +144,161 @@ int main()
             glVertex3f( 50.f, 50.f,  50.f);
 
         glEnd();
+
+
+}
+////////////////////////////////////////////////////////////
+/// Entry point of application
+////////////////////////////////////////////////////////////
+int main()
+{
+    // Create the main window
+    sf::RenderWindow App(sf::VideoMode(800, 600, 32), "SFML OpenGL");
+
+    // Create a clock for measuring time elapsed
+    sf::Clock Clock;
+
+	Camera camera;
+	camera.Init();
+	
+    //prepare OpenGL surface for HSR
+	glClearDepth(1.f);
+    glClearColor(0.3f, 0.3f, 0.3f, 0.f);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+
+    
+
+	bool perspective=true;
+	
+	bool rotate=true;
+	float angle=0;
+	
+	// Start game loop
+	while (App.isOpen())
+    {
+        // Process events
+        sf::Event Event;
+        /*while (App.pollEvent(Event))
+        {
+            // Close window : exit
+            if (Event.type == sf::Event::Closed)
+                App.close();
+
+            // Escape key : exit
+            if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::Escape))
+                App.close();
+
+			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::R)){
+				rotate=!rotate;
+			}
+
+			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::D)){
+				camera.MoveLeftRight(1);
+			}
+			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::A)){
+				camera.MoveLeftRight(-1);
+			}
+
+			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::W)){
+				camera.MoveForwardBack(1);
+			}
+			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::S)){
+				camera.MoveForwardBack(-1);
+			}
+
+			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::Right)){
+				camera.TurnRightLeft(1);
+			}
+			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::Left)){
+				camera.TurnRightLeft(-1);
+			}
+			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::Up)){
+				camera.TurnUpDown(1);
+			}
+			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::Down)){
+				camera.TurnUpDown(-1);
+			}
+
+			if ((Event.type == sf::Event::KeyPressed) && (Event.key.code == sf::Keyboard::P)){
+				perspective=!perspective;
+			}
+ 
+ 
+		}*/
+
+		        // Escape key : exit
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+                App.close();
+
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)){
+				rotate=!rotate;
+			}
+
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)){
+				camera.MoveLeftRight(1);
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)){
+				camera.MoveLeftRight(-1);
+			}
+
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)){
+				camera.MoveForwardBack(1);
+			}
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)){
+				camera.MoveForwardBack(-1);
+			}
+
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)){
+				camera.TurnRightLeft(1);
+			}
+			if (sf::Keyboard::isKeyPressed( sf::Keyboard::Left)){
+				camera.TurnRightLeft(-1);
+			}
+			if (sf::Keyboard::isKeyPressed( sf::Keyboard::Up)){
+				camera.TurnUpDown(1);
+			}
+			if (sf::Keyboard::isKeyPressed( sf::Keyboard::Down)){
+				camera.TurnUpDown(-1);
+			}
+
+			if (sf::Keyboard::isKeyPressed( sf::Keyboard::P)){
+				perspective=!perspective;
+			}
+        
+        //Prepare for drawing
+		// Clear color and depth buffer
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		//// Setup a perspective projection & Camera position
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+		camera.ProjectionTransform(perspective);
+		//gluPerspective(90.f, 1.f, 1.f, 3000.0f);//fov, aspect, zNear, zFar
+
+        // Apply some transformations for the cube
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        camera.ViewingTransform();
+		
+		if(rotate){
+			angle=Clock.getElapsedTime().asSeconds();
+		}
+
+		glTranslatef(0,0,10000);
+		int spacing=300;
+		for(int i=-5;i<10;i++){
+			for(int j=-5;j<10;j++){
+				for(int k=-5;k<10;k++){
+					glPushMatrix();
+					glTranslatef(i*spacing,j*spacing,k*spacing);
+					DrawCube(angle);
+					glPopMatrix();
+				}
+			}
+		}
+
+
 
         // Finally, display rendered frame on screen
         App.display();
